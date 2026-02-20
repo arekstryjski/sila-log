@@ -42,7 +42,7 @@ The Sila Arctic Sailing website is a bilingual platform for the yacht "Sila" tha
 #### Acceptance Criteria
 
 1. THE System SHALL store trip data in the PostgreSQL database
-2. WHEN a trip is created, THE System SHALL record start date, end date, start port, end port, and visited ports/anchorages
+2. WHEN a trip is created, THE System SHALL record trip number, city, start date, end date, start port, end port, and visited ports/anchorages
 3. THE System SHALL store trip statistics including miles sailed, number of days, engine hours, sailing hours, and night hours
 4. THE System SHALL record maximum sea state and maximum wind conditions for each trip
 5. THE System SHALL associate each trip with a skipper record
@@ -56,10 +56,12 @@ The Sila Arctic Sailing website is a bilingual platform for the yacht "Sila" tha
 #### Acceptance Criteria
 
 1. THE System SHALL store skipper information in a dedicated database table
-2. THE System SHALL store yacht information in a dedicated database table
-3. WHEN a trip references a skipper, THE System SHALL link to the skipper record
-4. WHEN a trip references a yacht, THE System SHALL link to the yacht record
-5. THE System SHALL allow multiple trips to reference the same skipper or yacht
+2. THE System SHALL store skipper name, certificate name, certificate number, phone, and email
+3. THE System SHALL store yacht information in a dedicated database table
+4. THE System SHALL store yacht name, type, registration number, home port, length, and engine power
+5. WHEN a trip references a skipper, THE System SHALL link to the skipper record
+6. WHEN a trip references a yacht, THE System SHALL link to the yacht record
+7. THE System SHALL allow multiple trips to reference the same skipper or yacht
 
 ### Requirement 4: Blog and Relations Content
 
@@ -69,7 +71,7 @@ The Sila Arctic Sailing website is a bilingual platform for the yacht "Sila" tha
 
 1. WHEN a blog post is created, THE System SHALL store it as a Markdown file with frontmatter metadata
 2. THE System SHALL support inline images within blog posts
-3. WHERE a blog post includes multiple images, THE System SHALL display an optional gallery at the end
+3. THE System SHALL optionally support an image gallery at the end of blog posts
 4. WHEN a blog post is tagged, THE System SHALL categorize it by areas (Svalbard, Greenland, renovation, etc.)
 5. WHEN a blog post is linked to trip data, THE System SHALL generate a simplified map following coastlines based on port information
 6. WHEN a blog post is linked to trip data, THE System SHALL display trip statistics automatically
@@ -86,28 +88,38 @@ The Sila Arctic Sailing website is a bilingual platform for the yacht "Sila" tha
 2. THE System SHALL support pages for yacht information, project history, name explanation, skippers, sailing areas, and packing guides
 3. WHEN a static page is created or modified, THE System SHALL make it immediately available on the website
 
-### Requirement 4: Image Galleries
+### Requirement 4: Destination Database and Image Galleries
 
-**User Story:** As a content editor, I want to create location-based image galleries with tagging capabilities, so that I can showcase photos from different Arctic locations.
-
-#### Acceptance Criteria
-
-1. THE System SHALL support global galleries organized by location
-2. THE System SHALL allow manual tagging of images
-3. WHERE EXIF data reading is cost-effective, THE System SHALL extract metadata from images
-4. WHEN manual tags are provided, THE System SHALL prioritize them over EXIF data
-5. THE System SHALL optimize images for web display
-
-### Requirement 5: Trip Calendar and Display
-
-**User Story:** As a crew member, I want to view a calendar of past and future trips, so that I can see available sailing opportunities.
+**User Story:** As a content editor, I want to create destination pages with descriptions and galleries, so that I can showcase Arctic locations and provide detailed information about ports and anchorages.
 
 #### Acceptance Criteria
 
-1. THE System SHALL display a calendar showing all past and future trips
-2. WHEN displaying trips, THE System SHALL show trip dates, destination, and availability status
+1. THE System SHALL store destination pages as Markdown files in the Git repository
+2. WHEN a destination is created, THE System SHALL include a short description and a long description
+3. THE System SHALL display a mini gallery on each destination page
+4. THE System SHALL support global galleries organized by location
+5. THE System SHALL allow manual tagging of images with destination names
+6. WHERE EXIF data reading is cost-effective, THE System SHALL extract metadata from images
+7. WHEN manual tags are provided, THE System SHALL prioritize them over EXIF data
+8. THE System SHALL optimize images for web display
+9. THE System SHALL provide a browsable list of all destinations
+10. WHEN viewing a destination, THE System SHALL display planned trips that will visit that location
+
+### Requirement 5: Trip List and Display
+
+**User Story:** As a crew member, I want to view a list of past and future trips with detailed information, so that I can see available sailing opportunities and plan my participation.
+
+#### Acceptance Criteria
+
+1. THE System SHALL display a list showing all past and future trips
+2. WHEN displaying the trip list, THE System SHALL show date, title, start port, end port, number of days (calculated), skipper, and availability status
 3. THE System SHALL only display predefined trips with fixed dates
 4. WHEN a trip reaches maximum crew capacity, THE System SHALL mark it as full
+5. WHEN a user clicks on a trip, THE System SHALL display a detailed trip page
+6. THE Trip detail page SHALL display all trip list information plus full itinerary
+7. THE Trip itinerary SHALL list planned ports and anchorages with short descriptions
+8. WHEN a trip has multiple itinerary variants, THE System SHALL display all variants on the trip detail page
+9. WHEN a port or anchorage is listed in an itinerary, THE System SHALL link to the destination detail page
 
 ### Requirement 6: Trip Booking Workflow
 
@@ -208,12 +220,13 @@ The Sila Arctic Sailing website is a bilingual platform for the yacht "Sila" tha
 #### Acceptance Criteria
 
 1. WHEN a crew member requests an Opinia z Rejsu after trip completion, THE System SHALL generate a PDF document
-2. THE Opinia_z_Rejsu SHALL include the crew member's personal information and trip details
-3. THE Opinia_z_Rejsu SHALL include a recommendation field (yes/no) filled by the skipper
-4. THE Opinia_z_Rejsu SHALL include a notes field filled by the skipper
-5. THE Opinia_z_Rejsu SHALL be accessible only to the specific crew member it concerns
-6. THE System SHALL generate the document on demand without storing the PDF
-7. THE System SHALL allow printing and saving of the generated document
+2. THE Opinia_z_Rejsu SHALL include the crew member's personal information and trip details including trip number, city, and date
+3. THE Opinia_z_Rejsu SHALL include trip statistics (miles sailed, days, hours, conditions)
+4. THE Opinia_z_Rejsu SHALL include a recommendation field (yes/no) filled by the skipper
+5. THE Opinia_z_Rejsu SHALL include a notes field filled by the skipper
+6. THE Opinia_z_Rejsu SHALL be accessible only to the specific crew member it concerns
+7. THE System SHALL generate the document on demand without storing the PDF
+8. THE System SHALL allow printing and saving of the generated document
 
 ### Requirement 15: Map Generation for Sailing Routes
 
@@ -261,3 +274,15 @@ The Sila Arctic Sailing website is a bilingual platform for the yacht "Sila" tha
 3. THE System SHALL maintain clear data relationships between users, bookings, and trips
 4. WHEN content structure changes, THE System SHALL NOT require database schema changes
 5. WHEN user data structure changes, THE System SHALL NOT require content file format changes
+
+### Requirement 19: Responsive Design
+
+**User Story:** As a user, I want to access the website on both desktop and mobile devices, so that I can browse trips and manage bookings from anywhere.
+
+#### Acceptance Criteria
+
+1. THE System SHALL provide responsive layouts that adapt to different screen sizes
+2. THE System SHALL optimize the user interface for both desktop and mobile devices
+3. WHEN viewed on mobile, THE System SHALL adjust layout, navigation, and content presentation for smaller screens
+4. WHEN viewed on desktop, THE System SHALL take advantage of larger screen space for richer layouts
+5. THE System SHALL ensure all functionality is accessible on both mobile and desktop devices
