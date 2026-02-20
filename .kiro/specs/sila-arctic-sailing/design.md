@@ -183,7 +183,7 @@ users (
   name TEXT,
   email TEXT UNIQUE,
   email_verified TIMESTAMP,
-  image TEXT,
+  image TEXT, -- Profile picture URL from social provider (e.g., Google avatar)
   role TEXT CHECK (role IN ('Owner', 'Skipper', 'Crew_Member')),
   created_at TIMESTAMP DEFAULT NOW()
 )
@@ -199,14 +199,13 @@ user_profiles (
   next_of_kin_name TEXT,
   next_of_kin_phone TEXT,
   sailing_qualification TEXT CHECK (sailing_qualification IN 
-    ('Yachtmaster/Kapitan', 'Day Skipper/Sternik', 'Competent Crew/Żeglarz', 
-     'Some Experience', 'None')),
+    ('YACHTMASTER', 'DAY_SKIPPER', 'COMPETENT_CREW', 'SOME_EXPERIENCE', 'NONE')),
   sailing_certificate_number TEXT,
-  radio_qualification TEXT CHECK (radio_qualification IN ('VHF', 'SSB', 'None')),
+  radio_qualification TEXT CHECK (radio_qualification IN ('VHF', 'SSB', 'NONE')),
   gun_permit_caliber TEXT,
   gun_permit_country TEXT,
   medical_qualification TEXT CHECK (medical_qualification IN 
-    ('First-aid', 'Paramedic', 'Doctor', 'None')),
+    ('FIRST_AID', 'PARAMEDIC', 'DOCTOR', 'NONE')),
   updated_at TIMESTAMP DEFAULT NOW()
 )
 
@@ -228,7 +227,7 @@ yachts (
   type TEXT,
   registration_number TEXT,
   home_port TEXT,
-  length_meters DECIMAL(5,2),
+  length_feet DECIMAL(5,2), -- Length in feet (e.g., 42.5)
   engine_power_hp INTEGER,
   created_at TIMESTAMP DEFAULT NOW()
 )
@@ -236,7 +235,7 @@ yachts (
 -- Trips
 trips (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  trip_number TEXT UNIQUE NOT NULL,
+  trip_number TEXT NOT NULL, -- From yacht logbook, not globally unique
   city TEXT,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
@@ -262,7 +261,7 @@ bookings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   trip_id UUID REFERENCES trips(id) ON DELETE CASCADE,
-  status TEXT CHECK (status IN ('Reserved', 'Approved', '1st installment', 'Paid in full', 'Waitlist')),
+  status TEXT CHECK (status IN ('Reserved', 'Approved', '1st installment', 'Paid in full', 'Waitlist', 'Cancelled', 'Refunded')),
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(user_id, trip_id)
@@ -323,9 +322,23 @@ CREATE INDEX idx_users_email ON users(email);
 **Booking State Machine:**
 ```
 Reserved → Approved → 1st installment → Paid in full
-    ↓
-Waitlist (when trip full)
+    ↓           ↓            ↓               ↓
+Waitlist    Cancelled   Cancelled       Cancelled
+                ↓            ↓               ↓
+            Refunded     Refunded        Refunded
 ```
+
+**Status Transitions:**
+- Any status → Cancelled (by crew member or Skipper/Owner)
+- Cancelled → Refunded (by Skipper/Owner only)
+- Waitlist → Reserved (automatic when spot opens)
+
+**Cancellation Logic:**
+- Crew member can cancel their own booking
+- Skipper/Owner can cancel any booking
+- Cancelled bookings do not count toward capacity
+- Payment information is preserved for record-keeping
+- Only Skipper/Owner can mark as Refunded
 
 **API Endpoints:**
 - `POST /api/bookings` - Create booking (authenticated users)
@@ -349,9 +362,11 @@ function createBooking(userId, tripId) {
 
 **Capacity Management:**
 - Query count of bookings with status IN ('Approved', '1st installment', 'Paid in full')
+- Cancelled and Refunded bookings do not count toward capacity
 - Compare against trip.max_crew_size
 - Display "Full" badge when at capacity
 - New bookings go to waitlist when full
+- When a booking is cancelled, automatically promote first waitlist booking to Reserved
 
 ### 6. User Profile Management
 
@@ -554,31 +569,69 @@ WhatsApp Business API has free tier for low-volume messaging (suitable for booki
 - Filter content by selected language
 - Hide content without translation in English mode
 
-**Language Detection:**
-```javascript
-function getContentByLanguage(allContent, selectedLang) {
-  return allContent.filter(item => {
-    if (selectedLang === 'pl') return true; // Show all in Polish mode
-    return item.lang === 'en'; // Only show English content in English mode
-  });
-}
-```
+**Enum Translation System:**
 
-**UI Labels:**
-Store UI labels in simple JSON files:
+Database stores simple enum codes (e.g., 'YACHTMASTER', 'DAY_SKIPPER', 'NONE'), while UI displays human-friendly labels based on selected language.
+
 ```javascript
 // locales/pl.json
 {
   "nav.trips": "Rejsy",
   "nav.blog": "Blog",
-  "booking.reserve": "Zarezerwuj"
+  "booking.reserve": "Zarezerwuj",
+  "qualification.YACHTMASTER": "Kapitan Jachtowy",
+  "qualification.DAY_SKIPPER": "Sternik Jachtowy",
+  "qualification.COMPETENT_CREW": "Żeglarz Jachtowy",
+  "qualification.SOME_EXPERIENCE": "Trochę doświadczenia",
+  "qualification.NONE": "Brak",
+  "radio.VHF": "VHF",
+  "radio.SSB": "SSB",
+  "radio.NONE": "Brak",
+  "medical.FIRST_AID": "Pierwsza pomoc",
+  "medical.PARAMEDIC": "Ratownik medyczny",
+  "medical.DOCTOR": "Lekarz",
+  "medical.NONE": "Brak"
 }
 
 // locales/en.json
 {
   "nav.trips": "Trips",
   "nav.blog": "Blog",
-  "booking.reserve": "Reserve"
+  "booking.reserve": "Reserve",
+  "qualification.YACHTMASTER": "Yachtmaster",
+  "qualification.DAY_SKIPPER": "Day Skipper",
+  "qualification.COMPETENT_CREW": "Competent Crew",
+  "qualification.SOME_EXPERIENCE": "Some Experience",
+  "qualification.NONE": "None",
+  "radio.VHF": "VHF",
+  "radio.SSB": "SSB",
+  "radio.NONE": "None",
+  "medical.FIRST_AID": "First Aid",
+  "medical.PARAMEDIC": "Paramedic",
+  "medical.DOCTOR": "Doctor",
+  "medical.NONE": "None"
+}
+```
+
+**Translation Helper:**
+```javascript
+function translateEnum(enumValue, category, language) {
+  const key = `${category}.${enumValue}`;
+  return translations[language][key] || enumValue;
+}
+
+// Usage:
+translateEnum('YACHTMASTER', 'qualification', 'pl') // Returns "Kapitan Jachtowy"
+translateEnum('YACHTMASTER', 'qualification', 'en') // Returns "Yachtmaster"
+```
+
+**Content Language Detection:**
+```javascript
+function getContentByLanguage(allContent, selectedLang) {
+  return allContent.filter(item => {
+    if (selectedLang === 'pl') return true; // Show all in Polish mode
+    return item.lang === 'en'; // Only show English content in English mode
+  });
 }
 ```
 
@@ -760,7 +813,7 @@ module.exports = {
     type: "Hallberg-Rassy 42",
     registrationNumber: "POL-123",
     homePort: "Gdynia",
-    lengthMeters: 12.8,
+    lengthFeet: 42.0,
     enginePowerHp: 75
   },
   maxCrewSize: 6,
@@ -945,6 +998,18 @@ A property is a characteristic or behavior that should hold true across all vali
 *For any* booking, it should not transition to "Approved" status without explicit skipper action (no auto-approval).
 **Validates: Requirements 8.7**
 
+### Property 29a: Cancelled bookings don't count toward capacity
+*For any* trip capacity calculation, bookings with status "Cancelled" or "Refunded" should not be included in the count.
+**Validates: Requirements 8.6**
+
+### Property 29b: Refund requires skipper authorization
+*For any* booking status transition to "Refunded", the requester must have role "Skipper" or "Owner".
+**Validates: Requirements 8.3**
+
+### Property 29c: Waitlist promotion on cancellation
+*For any* booking cancellation that frees a spot, if waitlist bookings exist for that trip, the oldest waitlist booking should be automatically promoted to "Reserved" status.
+**Validates: Requirements 8.2**
+
 ### Property 30: Booking creation triggers notification
 *For any* booking creation, a WhatsApp notification should be sent to the configured group.
 **Validates: Requirements 9.1**
@@ -982,15 +1047,15 @@ A property is a characteristic or behavior that should hold true across all vali
 **Validates: Requirements 11.2**
 
 ### Property 39: Sailing qualification enum validation
-*For any* user profile, the sailing qualification should be one of: "Yachtmaster/Kapitan", "Day Skipper/Sternik", "Competent Crew/Żeglarz", "Some Experience", or "None".
+*For any* user profile, the sailing qualification should be one of: "YACHTMASTER", "DAY_SKIPPER", "COMPETENT_CREW", "SOME_EXPERIENCE", or "NONE".
 **Validates: Requirements 11.3**
 
 ### Property 40: Certificate number requirement
-*For any* user profile with sailing qualification of "Yachtmaster/Kapitan", "Day Skipper/Sternik", or "Competent Crew/Żeglarz", the sailing certificate number should be present.
+*For any* user profile with sailing qualification of "YACHTMASTER", "DAY_SKIPPER", or "COMPETENT_CREW", the sailing certificate number should be present.
 **Validates: Requirements 11.4**
 
 ### Property 41: Radio qualification enum validation
-*For any* user profile, the radio qualification should be one of: "VHF", "SSB", or "None".
+*For any* user profile, the radio qualification should be one of: "VHF", "SSB", or "NONE".
 **Validates: Requirements 11.5**
 
 ### Property 42: Gun permit conditional fields
@@ -998,7 +1063,7 @@ A property is a characteristic or behavior that should hold true across all vali
 **Validates: Requirements 11.6**
 
 ### Property 43: Medical qualification enum validation
-*For any* user profile, the medical qualification should be one of: "First-aid", "Paramedic", "Doctor", or "None".
+*For any* user profile, the medical qualification should be one of: "FIRST_AID", "PARAMEDIC", "DOCTOR", or "NONE".
 **Validates: Requirements 11.7**
 
 ### Property 44: Profile displays booking history
