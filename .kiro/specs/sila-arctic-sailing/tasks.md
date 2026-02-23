@@ -26,21 +26,21 @@ This implementation plan breaks down the Sila Arctic Sailing platform into discr
     - **Property 4: Trip-yacht referential integrity**
     - **Validates: Requirements 2.5, 2.6**
 
-- [ ] 3. Implement NextAuth.js authentication
-  - [ ] 3.1 Configure NextAuth with PostgreSQL adapter
+- [x] 3. Implement NextAuth.js authentication
+  - [x] 3.1 Configure NextAuth with PostgreSQL adapter
     - Set up NextAuth configuration with social providers (Google, Facebook, GitHub)
     - Configure PostgreSQL adapter for session storage
     - Add role field to user model with default 'Crew_Member'
     - Implement callbacks for role assignment
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
   
-  - [ ] 3.2 Create authorization middleware
+  - [x] 3.2 Create authorization middleware
     - Write middleware to check user roles
     - Implement route protection for Skipper/Owner endpoints
     - Add helper functions: requireAuth, requireRole
     - _Requirements: 10.6, 10.7_
   
-  - [ ] 3.3 Write property tests for authentication
+  - [x] 3.3 Write property tests for authentication
     - **Property 33: User role validation**
     - **Property 34: Owner role limit**
     - **Property 35: Skipper permissions**
@@ -412,3 +412,13 @@ This implementation plan breaks down the Sila Arctic Sailing platform into discr
 - Database migrations should be reversible
 - All API endpoints require proper error handling
 - All tests are required for comprehensive coverage from the start
+
+- [ ] 26. Security: Update dependencies and address vulnerabilities
+  - Update Next.js to latest stable version (15.x or 16.x)
+  - Update NextAuth.js to stable release if available
+  - Run `npm audit fix` to address dev dependency vulnerabilities
+  - Test all authentication flows after updates
+  - Verify Image Optimizer security settings
+  - Review React Server Components security
+  - _Requirements: 17.1, 17.2_
+  - _Note: 36 high severity vulnerabilities identified during task 3 implementation (mostly dev dependencies)_

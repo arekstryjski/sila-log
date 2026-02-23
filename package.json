@@ -12,6 +12,7 @@
     "db:migrate": "node lib/db/migrate.js"
   },
   "dependencies": {
+    "@auth/pg-adapter": "^1.11.1",
     "@react-pdf/renderer": "^3.4.0",
     "dotenv": "^17.3.1",
     "leaflet": "^1.9.4",

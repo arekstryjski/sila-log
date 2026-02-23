@@ -1,4 +1,5 @@
 import './globals.css'
+import { SessionProvider } from './providers'
 
 export const metadata = {
   title: 'Sila Arctic Sailing',
@@ -8,7 +9,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pl">
-      <body>{children}</body>
+      <body>
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   )
 }
