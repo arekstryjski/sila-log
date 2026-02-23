@@ -1,0 +1,19 @@
+{
+  "nav.trips": "Rejsy",
+  "nav.blog": "Blog",
+  "nav.destinations": "Destynacje",
+  "nav.about": "O nas",
+  "booking.reserve": "Zarezerwuj",
+  "qualification.YACHTMASTER": "Kapitan Jachtowy",
+  "qualification.DAY_SKIPPER": "Sternik Jachtowy",
+  "qualification.COMPETENT_CREW": "Żeglarz Jachtowy",
+  "qualification.SOME_EXPERIENCE": "Trochę doświadczenia",
+  "qualification.NONE": "Brak",
+  "radio.VHF": "VHF",
+  "radio.SSB": "SSB",
+  "radio.NONE": "Brak",
+  "medical.FIRST_AID": "Pierwsza pomoc",
+  "medical.PARAMEDIC": "Ratownik medyczny",
+  "medical.DOCTOR": "Lekarz",
+  "medical.NONE": "Brak"
+}

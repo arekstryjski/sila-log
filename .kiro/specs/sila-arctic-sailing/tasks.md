@@ -6,7 +6,7 @@ This implementation plan breaks down the Sila Arctic Sailing platform into discr
 
 ## Tasks
 
-- [ ] 1. Initialize Next.js project and configure core dependencies
+- [x] 1. Initialize Next.js project and configure core dependencies
   - Create Next.js 14+ project with App Router
   - Install dependencies: react, next, pg, next-auth, @react-pdf/renderer, react-leaflet, leaflet, fast-check, jest
   - Configure Tailwind CSS for styling

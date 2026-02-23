@@ -1,0 +1,19 @@
+{
+  "nav.trips": "Trips",
+  "nav.blog": "Blog",
+  "nav.destinations": "Destinations",
+  "nav.about": "About",
+  "booking.reserve": "Reserve",
+  "qualification.YACHTMASTER": "Yachtmaster",
+  "qualification.DAY_SKIPPER": "Day Skipper",
+  "qualification.COMPETENT_CREW": "Competent Crew",
+  "qualification.SOME_EXPERIENCE": "Some Experience",
+  "qualification.NONE": "None",
+  "radio.VHF": "VHF",
+  "radio.SSB": "SSB",
+  "radio.NONE": "None",
+  "medical.FIRST_AID": "First Aid",
+  "medical.PARAMEDIC": "Paramedic",
+  "medical.DOCTOR": "Doctor",
+  "medical.NONE": "None"
+}
