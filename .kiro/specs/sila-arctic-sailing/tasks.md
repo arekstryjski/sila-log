@@ -13,15 +13,15 @@ This implementation plan breaks down the Sila Arctic Sailing platform into discr
   - Set up project structure: /app, /components, /lib, /content, /locales
   - _Requirements: 17.1, 17.2_
 
-- [ ] 2. Set up PostgreSQL database schema
-  - [ ] 2.1 Create database migration for core tables
+- [x] 2. Set up PostgreSQL database schema
+  - [x] 2.1 Create database migration for core tables
     - Create users, user_profiles, skippers, yachts, trips, bookings, trip_evaluations tables
     - Add CHECK constraints for enum fields
     - Add foreign key relationships with CASCADE deletes
     - Create indexes on foreign keys and frequently queried fields
     - _Requirements: 2.1, 3.1, 3.3, 10.1, 11.10, 12.1, 18.2_
   
-  - [ ] 2.2 Write property test for database schema integrity
+  - [x] 2.2 Write property test for database schema integrity
     - **Property 3: Trip-skipper referential integrity**
     - **Property 4: Trip-yacht referential integrity**
     - **Validates: Requirements 2.5, 2.6**
